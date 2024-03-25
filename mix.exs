@@ -19,6 +19,7 @@ defmodule ElixirVendingMachine.MixProject do
 
   defp deps() do
     [
+      {:gen_state_machine, "~> 3.0"}
     ]
   end
 end
