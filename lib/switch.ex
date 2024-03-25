@@ -1,17 +1,19 @@
 defmodule Switch do
-  use GenStateMachine
+  use GenStateMachine, callback_mode: :state_functions
 
-  # Callbacks
-
-  def handle_event(:cast, :flip, :off, data) do
+  def off(:cast, :flip, data) do
     {:next_state, :on, data + 1}
   end
 
-  def handle_event(:cast, :flip, :on, data) do
+  def off({:call, from}, :get_count, data) do
+    {:keep_state_and_data, [{:reply, from, data}]}
+  end
+
+  def on(:cast, :flip, data) do
     {:next_state, :off, data}
   end
 
-  def handle_event({:call, from}, :get_count, state, data) do
-    {:next_state, state, data, [{:reply, from, data}]}
+  def on({:call, from}, :get_count, data) do
+    {:keep_state_and_data, [{:reply, from, data}]}
   end
 end
