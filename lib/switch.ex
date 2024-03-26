@@ -1,19 +1,36 @@
 defmodule Switch do
-  use GenStateMachine, callback_mode: [:handle_event_function, :state_enter]
+  use GenStateMachine
 
-  def handle_event(:enter, _event, state, data) do
-    {:next_state, state, %{data | enters: data.enters + 1}}
+  # Client
+
+  def start_link() do
+    GenStateMachine.start_link(Switch, {:off, 0})
   end
 
+  def flip(pid) do
+    GenStateMachine.cast(pid, :flip)
+  end
+
+  def get_count(pid) do
+    GenStateMachine.call(pid, :get_count)
+  end
+
+  # Server (callbacks)
+
   def handle_event(:cast, :flip, :off, data) do
-    {:next_state, :on, %{data | flips: data.flips + 1}}
+    {:next_state, :on, data + 1}
   end
 
   def handle_event(:cast, :flip, :on, data) do
     {:next_state, :off, data}
   end
 
-  def handle_event({:call, from}, :get_count, _state, data) do
-    {:keep_state_and_data, [{:reply, from, data}]}
+  def handle_event({:call, from}, :get_count, state, data) do
+    {:next_state, state, data, [{:reply, from, data}]}
+  end
+
+  def handle_event(event_type, event_content, state, data) do
+    # Call the default implementation from GenStateMachine
+    super(event_type, event_content, state, data)
   end
 end
